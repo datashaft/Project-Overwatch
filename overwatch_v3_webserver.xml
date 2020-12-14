@@ -1,0 +1,311 @@
+<form theme="light">
+  <label>Overwatch: Web Server</label>
+  <fieldset submitButton="false">
+    <input type="time" token="timepicker01">
+      <label>Select Time Range</label>
+      <default>
+        <earliest>1607428800</earliest>
+        <latest>1607536800</latest>
+      </default>
+    </input>
+    <input type="dropdown" token="index_tok" searchWhenChanged="true">
+      <label>Select Index</label>
+      <fieldForLabel>index</fieldForLabel>
+      <fieldForValue>index</fieldForValue>
+      <search>
+        <query>index=* sourcetype=*  | table index | dedup index</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+      <default>dataset02</default>
+    </input>
+    <input type="dropdown" token="host_tok" searchWhenChanged="true">
+      <label>Select Web Server</label>
+      <fieldForLabel>host</fieldForLabel>
+      <fieldForValue>host</fieldForValue>
+      <search>
+        <query>index="$index_tok$" | table host | dedup host</query>
+        <earliest>-30d@d</earliest>
+        <latest>now</latest>
+      </search>
+      <initialValue>owaspbwa</initialValue>
+    </input>
+    <input type="dropdown" token="res" searchWhenChanged="true">
+      <label>Adjust Time Resolution</label>
+      <choice value="30">30 seconds</choice>
+      <choice value="1m">1 minute</choice>
+      <choice value="5m">5 minutes</choice>
+      <choice value="10m">10 minutes</choice>
+      <choice value="15m">15 minutes</choice>
+      <choice value="30m">30 minutes</choice>
+      <choice value="1h">1 hour</choice>
+      <default>10m</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Web Server Network Traffic</title>
+      <chart>
+        <title>Number of Packets Going Through Web Server Firewall by IP Address</title>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" (sourcetype="syslog" OR sourcetype="ufw.log") SRC=* | dedup ID | timechart span="$res$" count by SRC where max in top10 useother=f</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>1m</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.text">Time</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">visible</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">connect</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">none</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">small</option>
+        <option name="trellis.splitBy">DPT</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Port Scan Detection</title>
+      <chart>
+        <title>Number of Ports Accessed per IP Address</title>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" (sourcetype="syslog" OR sourcetype="ufw.log") SRC=* | dedup ID | timechart span="$res$" dc(DPT) by SRC where max in top10 useother=f</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisTitleY2.visibility">visible</option>
+        <option name="charting.axisX.abbreviation">none</option>
+        <option name="charting.axisX.scale">linear</option>
+        <option name="charting.axisY.abbreviation">none</option>
+        <option name="charting.axisY.maximumNumber">65535</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.axisY2.abbreviation">none</option>
+        <option name="charting.axisY2.enabled">0</option>
+        <option name="charting.axisY2.scale">inherit</option>
+        <option name="charting.chart">line</option>
+        <option name="charting.chart.bubbleMaximumSize">50</option>
+        <option name="charting.chart.bubbleMinimumSize">10</option>
+        <option name="charting.chart.bubbleSizeBy">area</option>
+        <option name="charting.chart.nullValueMode">gaps</option>
+        <option name="charting.chart.showDataLabels">none</option>
+        <option name="charting.chart.sliceCollapsingThreshold">0.01</option>
+        <option name="charting.chart.stackMode">default</option>
+        <option name="charting.chart.style">shiny</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.layout.splitSeries">0</option>
+        <option name="charting.layout.splitSeries.allowIndependentYRanges">0</option>
+        <option name="charting.legend.labelStyle.overflowMode">ellipsisMiddle</option>
+        <option name="charting.legend.mode">standard</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="charting.lineWidth">2</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="trellis.enabled">0</option>
+        <option name="trellis.scales.shared">1</option>
+        <option name="trellis.size">medium</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Total Invalid SSH Logins</title>
+      <chart>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype=linux_secure Fail*  process=*ssh* | stats count</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="charting.chart">markerGauge</option>
+        <option name="charting.chart.rangeValues">[0,30,50,80,100]</option>
+        <option name="charting.chart.style">minimal</option>
+        <option name="charting.gaugeColors">["0x53a051","0xf8be34","0xf1813f","0xdc4e41"]</option>
+        <option name="refresh.display">progressbar</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>SSH Attempts</title>
+      <chart>
+        <title>All SSH Logins by IP Address</title>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype="linux_secure" process=ssh* clientip=* | timechart span="$res$" count by clientip where max in top10 useother=f</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisY.maximumNumber">100</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Directory Enumeration Detection</title>
+      <chart>
+        <title>400 and 500 series HTTP Response by IP address</title>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype="access_combined" (status="4*" OR status="5*") | timechart span="$res$" count by clientip where max in top10 useother=f</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisY.scale">log</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Local File inclusion/Path Traversal Attempts</title>
+      <chart>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" (uri="*../*" OR uri="*except://*" OR uri="*php://" OR uri="*proc/self*" OR uri="*/etc/*") | timechart span="$res$"  count by clientip</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Suspicious URI by Length</title>
+      <table>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype="access_combined" | eval urilen=len(uri) | eventstats avg(urilen) as avg, stdev(urilen) as stdev by host | where urilen &gt; (avg + (4*stdev)) | sort -urilen | table clientip uri | rename clientip as "Client IP" uri as "Request URI"</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.value$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>Irregular Length URI Detection</title>
+      <chart>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype="access_combined" | eval urilen=len(uri) | eventstats avg(urilen) as avg, stdev(urilen) as stdev by host | where urilen &gt; (avg + (4*stdev)) | timechart span="$res$" count by clientip</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.overflowMode">ellipsisNone</option>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+    <panel>
+      <title>Most Recent XSS/SQLi Attacks</title>
+      <table>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype="access_combined" ( (uri="*%3Cscript*" OR uri="*%3CSCRIPT*" OR uri="*javascript%3A*" OR uri="*%26quot%3B*" OR uri="*onerror%3D*" OR uri="*onmouseover%3D*" OR uri="*%2EfromCharCode%28*" ) OR (uri="*%3B%2D%2D*" OR uri="*%3B%23*" OR uri="*%2F%2A*" OR uri="*%3B*" OR uri="*IF%28*") )| sort -_time | table clientip uri | rename clientip as "Client IP" uri as "Request URI"</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">cell</option>
+        <option name="percentagesRow">false</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">false</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.value$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </table>
+    </panel>
+    <panel>
+      <title>XSS/SQLi Attacks</title>
+      <chart>
+        <search>
+          <query>index="$index_tok$" host="$host_tok$" sourcetype="access_combined" (uri="*%3Cscript*" OR uri="*%3CSCRIPT*" OR uri="*javascript%3A*" OR uri="*%26quot%3B*" OR uri="*onerror%3D*" OR uri="*onmouseover%3D*" OR uri="*%2EfromCharCode%28*" ) OR (uri="*%3B%2D%2D*" OR uri="*%3B%23*" OR uri="*%2F%2A*" OR uri="*%3B*" OR uri="*IF%28*") | sort -_time | timechart span="$res$" count by clientip</query>
+          <earliest>$timepicker01.earliest$</earliest>
+          <latest>$timepicker01.latest$</latest>
+        </search>
+        <option name="charting.axisLabelsX.majorLabelStyle.rotation">-45</option>
+        <option name="charting.axisTitleX.visibility">collapsed</option>
+        <option name="charting.axisTitleY.visibility">collapsed</option>
+        <option name="charting.axisY.scale">linear</option>
+        <option name="charting.chart">area</option>
+        <option name="charting.drilldown">all</option>
+        <option name="charting.legend.placement">none</option>
+        <option name="refresh.display">progressbar</option>
+        <drilldown>
+          <link target="_blank">/app/search/overwatch_ip_address?form.ip.addr_tok=$click.name2$&amp;form.index_tok=$index_tok$</link>
+        </drilldown>
+      </chart>
+    </panel>
+  </row>
+</form>
