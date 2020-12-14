@@ -177,7 +177,4 @@ This example shows how to configure basic and advanced sparkline formatting opti
   - `<option name="charting.foregroundColor">#EBF5FF</option>`
   - `<option name="charting.fontColor">#99CCFF</option>`
   - `<option name="charting.seriesColors">[0xEBF0F5,0xC2D1E0,0x99B2CC,0x7094B8,0x4775A3,0x2E5C8A,0x24476B,0x1A334C,0x0F1F2E,0x050A0F]</option>`
-  - `
-  - `
-  - 
 
